@@ -11,11 +11,6 @@ client = commands.Bot(command_prefix='%')
 database = db.Database(config.JM_DB_PATH)
 
 @client.command()
-async def test(ctx):
-    l = database.get_entries("MAP01")
-    await ctx.send(l)
-
-@client.command()
 async def map(ctx, map):
     map = map.upper()
     maptype = database.get_map_type(map)
@@ -52,17 +47,8 @@ async def exit(ctx):
     if ctx.author.id in config.ADMINS:
         await client.close()
         sys.exit()
-
-@client.event
-async def on_ready():
-    global firstRun
-    
-    if firstRun:
-        firstRun = False
-
-@client.event
-async def on_disconnect():
-    pass
+    else:
+        await ctx.send("No")
 
 client.loop.create_task(wrcheck.poll_thread_target(client, database))
 client.run(config.BOT_TOKEN)
