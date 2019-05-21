@@ -41,6 +41,7 @@ async def map(ctx, map):
 
     else:
         await ctx.send("Error - No map named %s exists, or it has no set records." % (map,))
+        return
         
     await ctx.send(embed=embed)
 
