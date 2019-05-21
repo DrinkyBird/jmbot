@@ -25,7 +25,7 @@ async def map(ctx, map):
         embed.add_field(name="Record Date", value=jmutil.format_date(rec['date']), inline=False)
         embed.add_field(name="Record Set By", value=jmutil.strip_colours(rec['author']), inline=False)
 
-        for i in range(min(25, len(l))):    
+        for i in range(min(10, len(l))):    
             user, time = l[i]
 
             embed.add_field(name=str(i + 1) + ". " + user, value=jmutil.ticstime(time), inline=True)
