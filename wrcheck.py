@@ -61,7 +61,6 @@ async def perform_poll(client, database):
 
                     embed.add_field(name=str(i + 1) + ". " + user, value=jmutil.ticstime(time), inline=True)
             elif maptype == "team":
-                oldrec = records[map]
                 recs = data
 
                 embed.add_field(name="Record Time", value=jmutil.ticstime(recs['time']), inline=False)
@@ -75,6 +74,8 @@ async def perform_poll(client, database):
                     embed.add_field(name=jmutil.strip_colours(player), value=str(points) + " point" + plural, inline=True)
 
                 if map in records:
+                    oldrec = records[map]
+
                     embed.add_field(name="Previous Record Time", value=jmutil.ticstime(oldrec['time']), inline=False)
                     embed.add_field(name="Previous Record Date", value=jmutil.format_date(oldrec['date']), inline=False)
 
