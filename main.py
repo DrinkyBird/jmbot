@@ -17,8 +17,8 @@ async def map(ctx, map):
 
     embed = discord.Embed(title="Records for " + map, colour=discord.Colour.blue())
 
-    if maptype == "solo":
-        rec = database.get_solo_map_record(map)
+    if maptype == "solo" or maptype == "jmrun":
+        rec = database.get_solo_map_record(map) if maptype == "solo" else database.get_jmrun_map_record(map)
         l = database.get_map_records(map)
 
         embed.add_field(name="Record Time", value=jmutil.ticstime(rec['time']), inline=False)

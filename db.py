@@ -145,7 +145,7 @@ class Database:
         """
         Jumpmaze utility function: returns the record time for this map.
 
-        Returns a dict containing the fields author, time, and date; or None
+        Returns a dict containing the record's author, time, and date; or None
         if this map is not in the database, has no record, or is not a solo map.
         """
 
@@ -158,6 +158,25 @@ class Database:
             'author':       self.get_entry(map, 'jrs_hs_author'),
             'time':         int(self.get_entry(map, 'jrs_hs_time')),
             'date':         self.get_entry(map, 'jrs_hs_rdate')
+        }
+
+    def get_jmrun_map_record(self, map):
+        """
+        Jumpmaze utility function: returns the record time for this map.
+
+        Returns a dict containing the record's author, time, and date; or None
+        if this map is not in the database, has no record, or is not a jmrun map.
+        """
+
+        map = map.upper()
+
+        if not self.namespace_exists(map) or self.get_map_type(map) != "jmrun" or not self.entry_exists(map, 'JMR_hs_author') or not self.entry_exists(map, 'JMR_hs_time') or not self.entry_exists(map, 'JMR_hs_rdate'):
+            return None
+
+        return {
+            'author':       self.get_entry(map, 'JMR_hs_author'),
+            'time':         int(self.get_entry(map, 'JMR_hs_time')),
+            'date':         self.get_entry(map, 'JMR_hs_rdate')
         }
 
     def get_team_map_record(self, map):
@@ -195,7 +214,9 @@ class Database:
         if not self.namespace_exists(map):
             return None
 
-        if self.entry_exists(map, "jrs_hs_time"):
+        if self.entry_exists(map, "JMR_hs_time"):
+            return "jmrun"
+        elif self.entry_exists(map, "jrs_hs_time"):
             return "solo"
         elif self.entry_exists(map, "jrt_hs_time"):
             return "team"
