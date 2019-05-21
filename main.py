@@ -38,6 +38,9 @@ async def map(ctx, map):
 
         for player, points in recs['helpers'].items():
             embed.add_field(name=jmutil.strip_colours(player), value=str(points) + " points", inline=True)
+
+    else:
+        await ctx.send("Error - No map named %s exists, or it has no set records." % (map,))
         
     await ctx.send(embed=embed)
 
