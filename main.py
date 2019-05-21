@@ -17,7 +17,7 @@ async def map(ctx, map):
 
     url = "%s/maps/%s" % (config.SITE_URL, map)
     embed = discord.Embed(title="Records for " + map, colour=discord.Colour.blue(), url=url)
-    embed.set_image(url="%s/img/maps/%s.png" % (config.SITE_URL, map))
+    embed.set_thumbnail(url="%s/img/maps/%s.png" % (config.SITE_URL, map))
 
     if maptype == "solo" or maptype == "jmrun":
         rec = database.get_solo_map_record(map) if maptype == "solo" else database.get_jmrun_map_record(map)
