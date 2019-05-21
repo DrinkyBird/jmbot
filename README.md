@@ -19,6 +19,9 @@ NOTIFY_CHANNEL=563395640357421057
 
 # How often to check for world records (in seconds)
 WR_POLL_FREQ = 60
+
+# Location of your JM site
+SITE_URL = "https://jm.csnxs.uk"
 ```
 
 3. `python main.py`
