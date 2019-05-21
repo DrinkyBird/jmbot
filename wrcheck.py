@@ -74,19 +74,20 @@ async def perform_poll(client, database):
 
                     embed.add_field(name=jmutil.strip_colours(player), value=str(points) + " point" + plural, inline=True)
 
-                embed.add_field(name="Previous Record Time", value=jmutil.ticstime(oldrec['time']), inline=False)
-                embed.add_field(name="Previous Record Date", value=jmutil.format_date(oldrec['date']), inline=False)
+                if map in records:
+                    embed.add_field(name="Previous Record Time", value=jmutil.ticstime(oldrec['time']), inline=False)
+                    embed.add_field(name="Previous Record Date", value=jmutil.format_date(oldrec['date']), inline=False)
 
-                helpers = ''
-                i = 0
+                    helpers = ''
+                    i = 0
 
-                for player, points in oldrec['helpers'].items():
-                    helpers += "%s (%d)" % (jmutil.strip_colours(player), points)
-                    if i < len(oldrec['helpers']) - 1:
-                        helpers += ", "
-                    i += 1
+                    for player, points in oldrec['helpers'].items():
+                        helpers += "%s (%d)" % (jmutil.strip_colours(player), points)
+                        if i < len(oldrec['helpers']) - 1:
+                            helpers += ", "
+                        i += 1
 
-                embed.add_field(name="Previous Record Helpers", value=helpers, inline=False)
+                    embed.add_field(name="Previous Record Helpers", value=helpers, inline=False)
 
             channel = client.get_channel(config.NOTIFY_CHANNEL)
             await channel.send(embed=embed)
