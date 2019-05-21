@@ -48,6 +48,7 @@ async def perform_poll(client, database):
         if isWR:
             url = "%s/maps/%s" % (config.SITE_URL, map)
             embed = discord.Embed(title="A new record for %s has been set!" % (map,), colour=discord.Colour.green(), url=url)
+            embed.set_thumbnail(url="%s/img/maps/%s.png" % (config.SITE_URL, map))
 
             if maptype == "solo":
                 rec = database.get_solo_map_record(map)
