@@ -40,7 +40,11 @@ async def map(ctx, map):
         embed.add_field(name="Record Date", value=jmutil.format_date(recs['date']), inline=False)
 
         for player, points in recs['helpers'].items():
-            embed.add_field(name=jmutil.strip_colours(player), value=str(points) + " points", inline=True)
+            plural = "s"
+            if points == 1:
+                plural = ""
+
+            embed.add_field(name=jmutil.strip_colours(player), value=str(points) + " point" + plural, inline=True)
 
     else:
         await ctx.send("Error - No map named %s exists, or it has no set records." % (map,))
