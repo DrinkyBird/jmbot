@@ -60,8 +60,9 @@ async def perform_poll(client, database):
                 
                 for i in range(min(3, len(l))):    
                     user, time = l[i]
+                    rank = database.get_entry_rank(map + '_pbs', user, False)
 
-                    embed.add_field(name=str(i + 1) + ". " + user, value=jmutil.ticstime(time), inline=True)
+                    embed.add_field(name=str(rank) + ". " + user, value=jmutil.ticstime(time), inline=True)
             elif maptype == "team":
                 recs = data
 
