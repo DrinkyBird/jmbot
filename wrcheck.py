@@ -22,6 +22,8 @@ def build_records(database):
             ret[map] = database.get_solo_map_record(map)
         elif maptype == "team":
             ret[map] = database.get_team_map_record(map)
+        elif maptype == "jmrun":
+            ret[map] = database.get_jmrun_map_record(map)
         else:
             continue
 
