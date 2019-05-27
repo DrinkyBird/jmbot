@@ -189,18 +189,38 @@ class Database:
         if not self.namespace_exists(map) or self.get_map_type(map) != "team" or not self.entry_exists(map, 'jrt_hs_time') or not self.entry_exists(map, 'jrt_hs_rdate') or not self.entry_exists(map, 'jrt_hs_total_players'):
             return None
 
-        numplayers = int(self.get_entry(map, "jrt_hs_total_players"))
-        helpers = {}
+        helpers = {}       
+        helpersbyname = {} 
+        
+        self.lock()
 
-        for i in range(numplayers):
-            name = self.get_entry(map, 'jrt_hs_helper_' + str(i))
-            score = int(self.get_entry(map, 'jrt_hs_points_' + str(i)))
-            helpers[name] = score
+        c = self.get_cursor()
+
+        c.execute("SELECT KeyName,Value FROM "+TABLENAME+" WHERE Namespace=%s AND (KeyName LIKE 'jrt_hs_helper_%' OR KeyName LIKE 'jrt_hs_points_%')", (map,))
+
+        rows = c.fetchall()
+
+        for key, value in rows:
+            i = int(key[len("jrt_hs_helper_"):])
+            if i not in helpers:
+                helpers[i] = {}
+
+            if key.startswith("jrt_hs_helper_"):
+                helpers[i]['name'] = value
+            elif key.startswith("jrt_hs_points_"): 
+                helpers[i]['points'] = int(value)
+
+        for i, v in helpers.items():
+            k = v['name']
+            p = v['points']
+            helpersbyname[k] = p
+
+        self.unlock()
 
         return {
             'time':                 int(self.get_entry(map, 'jrt_hs_time')),
             'date':                 self.get_entry(map, 'jrt_hs_rdate'),
-            'helpers':              helpers
+            'helpers':              helpersbyname
         }
 
     def get_map_type(self, map):
