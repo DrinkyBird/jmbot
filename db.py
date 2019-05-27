@@ -181,7 +181,11 @@ class Database:
 
     def get_team_map_record(self, map):
         """
-        asdf
+        Jumpmaze utility functions: returns the team points for this map.
+
+        Returns a dict mapping helper names to the amount of points they 
+        contributed, or None if this map is not in the database, has no
+        record, or is not a team map.
         """
 
         map = map.upper()
