@@ -196,7 +196,7 @@ class Database:
 
         c = self.get_cursor()
 
-        c.execute("SELECT KeyName,Value FROM "+TABLENAME+" WHERE Namespace=%s AND (KeyName LIKE 'jrt_hs_helper_%' OR KeyName LIKE 'jrt_hs_points_%')", (map,))
+        c.execute("SELECT KeyName,Value FROM "+TABLENAME+" WHERE Namespace=? AND (KeyName LIKE 'jrt_hs_helper_%' OR KeyName LIKE 'jrt_hs_points_%')", (map,))
 
         rows = c.fetchall()
 
