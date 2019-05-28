@@ -61,5 +61,10 @@ async def exit(ctx):
     else:
         await ctx.send("No")
 
+@client.event
+async def on_ready():
+    game = discord.Game("Jumpmaze")
+    await client.change_presence(status=discord.Status.online, activity=game)
+
 client.loop.create_task(wrcheck.poll_thread_target(client, database))
 client.run(config.BOT_TOKEN)
