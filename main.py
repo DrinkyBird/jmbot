@@ -10,7 +10,7 @@ firstRun = True
 client = commands.Bot(command_prefix='%')
 database = db.Database(config.JM_DB_PATH)
 
-class Jumpmaze:
+class Jumpmaze(commands.Cog):
     """Jumpmaze Discord bot commands"""
 
     @commands.command(help="Returns the records for a specified map.", usage="<lump>")
