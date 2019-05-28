@@ -55,14 +55,14 @@ class Jumpmaze(commands.Cog):
             
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def exit(self, ctx):
-        print(ctx.author.id)
-        if ctx.author.id in config.ADMINS:
-            await client.close()
-            sys.exit()
-        else:
-            await ctx.send("No")
+@client.command()
+async def exit(ctx):
+    print(ctx.author.id)
+    if ctx.author.id in config.ADMINS:
+        await client.close()
+        sys.exit()
+    else:
+        await ctx.send("No")
 
 @client.event
 async def on_ready():
