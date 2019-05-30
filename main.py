@@ -4,6 +4,7 @@ import sys
 import db
 import jmutil
 import wrcheck
+import operator
 from discord.ext import commands
 
 firstRun = True
@@ -54,6 +55,36 @@ class Jumpmaze(commands.Cog):
             return
             
         await ctx.send(embed=embed)
+
+    @commands.command(help="Returns the top 10 players")
+    async def top(self, ctx):
+        players = database.get_all_players()
+        solomaps = database.get_solo_map_names()
+        scores = {}
+
+        numsolomaps = len(solomaps)
+
+        for player in players:
+            scores[player] = 0
+
+            maps = database.get_player_maps(player)
+
+            for map in maps:
+                rank = database.get_entry_rank(map + '_pbs', player, True)
+                scores[player] += rank
+
+            scores[player] /= numsolomaps
+
+        sortedscores = sorted(scores.items(), key=operator.itemgetter(1), reverse=True)
+
+        embed = discord.Embed(title="Top Players", colour=discord.Colour.blue())
+        for i in range(min(15, len(sortedscores))):
+            player, score = sortedscores[i]
+
+            embed.add_field(name="%d. %s" % (i + 1, player), value="Score: %0.3f" % (score,), inline=True)
+
+        await ctx.send(embed=embed)
+
 
 @client.command()
 async def exit(ctx):

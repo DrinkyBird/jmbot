@@ -120,6 +120,22 @@ class Database:
 
         return [i[0] for i in rows]
 
+    def get_solo_map_names(self):
+        """
+        Returns the lump names for all solo maps
+        """
+
+        self.lock()
+
+        c = self.get_cursor()
+
+        c.execute("SELECT DISTINCT Namespace FROM "+TABLENAME+" WHERE Namespace LIKE '%_pbs'")
+        rows = c.fetchall()
+
+        self.unlock()
+
+        return [i[0][:-4] for i in rows]
+
     def get_map_records(self, map):
         """
         Jumpmaze utility function: returns all records for the specified map.
@@ -247,4 +263,43 @@ class Database:
 
         return None
 
-        
+    def get_all_players(self):
+        """
+        Returns a list of all players who have set personal best times for any
+        map.
+        """
+
+        self.lock()
+
+        c = self.get_cursor()
+
+        c.execute("SELECT DISTINCT KeyName FROM "+TABLENAME+" WHERE Namespace LIKE '%_pbs'")
+
+        rows = c.fetchall()
+
+        self.unlock()
+
+        for i in range(len(rows)):
+            rows[i] = rows[i][0]
+
+        return rows
+
+    def get_player_maps(self, player):
+        """
+        Returns a list of maps this player has set personal best times for.
+        """
+
+        self.lock()
+
+        c = self.get_cursor()
+
+        c.execute("SELECT DISTINCT Namespace FROM "+TABLENAME+" WHERE Namespace LIKE '%_pbs' AND KeyName=?", (player,))
+
+        rows = c.fetchall()
+
+        self.unlock()
+
+        for i in range(len(rows)):
+            rows[i] = rows[i][0][:-4]
+
+        return rows
