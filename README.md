@@ -22,6 +22,8 @@ WR_POLL_FREQ = 60
 
 # Location of your JM site
 SITE_URL = "https://jm.csnxs.uk"
+
+COMMAND_PREFIX = '%'
 ```
 
 3. `python main.py`

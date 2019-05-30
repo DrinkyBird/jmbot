@@ -7,7 +7,7 @@ import wrcheck
 from discord.ext import commands
 
 firstRun = True
-client = commands.Bot(command_prefix='%')
+client = commands.Bot(command_prefix=config.COMMAND_PREFIX)
 database = db.Database(config.JM_DB_PATH)
 
 class Jumpmaze(commands.Cog):
