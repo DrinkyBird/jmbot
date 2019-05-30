@@ -211,6 +211,8 @@ class Database:
 
         helpers = {}       
         helpersbyname = {} 
+
+        helpercount = int(self.get_entry(map, 'jrt_hs_total_players'))
         
         self.lock()
 
@@ -222,6 +224,10 @@ class Database:
 
         for key, value in rows:
             i = int(key[len("jrt_hs_helper_"):])
+
+            if i >= helpercount:
+                continue
+
             if i not in helpers:
                 helpers[i] = {}
 
