@@ -118,8 +118,6 @@ class Jumpmaze(commands.Cog):
             map += ' (Route %d)' % (route,)
         ns = map + '_pbs'
 
-        print('NS: %s' % (ns,))
-
         player = player.lower()
 
         if not database.entry_exists(ns, player):
