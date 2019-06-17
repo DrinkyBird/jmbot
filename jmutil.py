@@ -45,4 +45,6 @@ def format_date(date):
     dt = datetime.datetime.strptime(date, '%Y%m%d')
     return dt.strftime('%d %B %Y')
 
-    return date
+def format_timestamp(ts):
+    dt = datetime.datetime.utcfromtimestamp(ts)
+    return dt.strftime('%d %B %Y')

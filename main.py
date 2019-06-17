@@ -118,6 +118,7 @@ class Jumpmaze(commands.Cog):
 
         embed.add_field(name="Time", value=jmutil.ticstime(time), inline=True)
         embed.add_field(name="Rank", value=str(rank), inline=True)
+        embed.add_field(name="Date", value=jmutil.format_timestamp(database.get_timestamp(ns, player)), inline=True)
 
         await ctx.send(embed=embed)
 

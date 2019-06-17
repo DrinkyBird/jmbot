@@ -62,6 +62,21 @@ class Database:
 
         return row[0]
 
+    def get_timestamp(self, namespace, key):
+        if not self.entry_exists(namespace, key):
+            return None
+
+        self.lock()
+
+        c = self.get_cursor()
+        c.execute("SELECT CAST(Timestamp AS INTEGER) FROM "+TABLENAME+" WHERE Namespace=? AND KeyName=?", (namespace, key))
+        row = c.fetchone()
+
+        self.unlock()
+
+        return row[0]
+
+
     def get_entries(self, namespace):
         """Returns a dictionary of all key: value entries in this namespace"""
 
