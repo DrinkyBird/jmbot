@@ -111,6 +111,33 @@ class Jumpmaze(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.command(help="Returns the specified player's time on a specified map")
+    async def playertime(self, ctx, player, map, route=-1):
+        map = map.upper()
+        if route >= 1:
+            map += ' (Route %d)' % (route,)
+        ns = map + '_pbs'
+
+        print('NS: %s' % (ns,))
+
+        player = player.lower()
+
+        if not database.entry_exists(ns, player):
+            await ctx.send("Error - No player named %s exists, or they have not set a time for %s." % (player, map))
+            return
+
+        time = int(database.get_entry(ns, player))
+        rank = database.get_entry_rank(ns, player, False)
+
+        url = config.SITE_URL + urllib.parse.quote("/players/%s" % (player,))
+        embed = discord.Embed(title="%s's time for %s" % (player, map), colour=discord.Colour.teal(), url=url)
+        embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (map,)))
+
+        embed.add_field(name="Time", value=jmutil.ticstime(time), inline=True)
+        embed.add_field(name="Rank", value=str(rank), inline=True)
+
+        await ctx.send(embed=embed)
+
 
 @client.command()
 async def exit(ctx):
