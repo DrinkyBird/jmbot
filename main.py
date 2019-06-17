@@ -67,7 +67,7 @@ class Jumpmaze(commands.Cog):
     async def maproute(self, ctx, map, route):
         map = map.upper()
         routens = '%s (Route %s)' % (map, route)
-        maptype = database.get_map_type(map)
+        maptype = database.get_map_type(routens)
 
         if maptype != "solo" or not database.entry_exists(routens, 'jrs_hs_time'):
             await ctx.send("Error - No map named %s exists, it has no set records, or it is not a route-based map." % (map,))
