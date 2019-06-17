@@ -5,6 +5,7 @@ import db
 import jmutil
 import wrcheck
 import operator
+import urllib.parse
 from discord.ext import commands
 
 firstRun = True
@@ -47,9 +48,9 @@ class Jumpmaze(commands.Cog):
         map = map.upper()
         maptype = database.get_map_type(map)
 
-        url = "%s/maps/%s" % (config.SITE_URL, map)
+        url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (map,))
         embed = discord.Embed(title="Records for " + map, colour=discord.Colour.blue(), url=url)
-        embed.set_thumbnail(url="%s/img/maps/%s.png" % (config.SITE_URL, map))
+        embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (map,)))
 
         if maptype == "solo" or maptype == "jmrun":
             await self.populate_solo_embed(embed, map)
@@ -73,11 +74,13 @@ class Jumpmaze(commands.Cog):
             await ctx.send("Error - No map named %s exists, it has no set records, or it is not a route-based map." % (map,))
             return
 
-        embed = discord.Embed(title="Records for %s (route %s)" % (map, route), colour=discord.Colour.blue())
-        self.populate_solo_embed(embed, routens)
+        url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (routens,))
+        embed = discord.Embed(title="Records for %s (route %s)" % (map, route), colour=discord.Colour.blue(), url=url)
+        embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (routens,)))
+
+        await self.populate_solo_embed(embed, routens)
             
         await ctx.send(embed=embed)
-        
 
     @commands.command(help="Returns the top 10 players")
     async def top(self, ctx):

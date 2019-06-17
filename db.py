@@ -143,7 +143,7 @@ class Database:
         Returns None if this map has no recorded records.
         """
 
-        ns = map.upper() + "_pbs"
+        ns = map + "_pbs"
         if not self.namespace_exists(ns):
             return None
 
@@ -165,8 +165,6 @@ class Database:
         if this map is not in the database, has no record, or is not a solo map.
         """
 
-        map = map.upper()
-
         if not self.namespace_exists(map) or self.get_map_type(map) != "solo" or not self.entry_exists(map, 'jrs_hs_author') or not self.entry_exists(map, 'jrs_hs_time') or not self.entry_exists(map, 'jrs_hs_rdate'):
             return None
 
@@ -183,8 +181,6 @@ class Database:
         Returns a dict containing the record's author, time, and date; or None
         if this map is not in the database, has no record, or is not a jmrun map.
         """
-
-        map = map.upper()
 
         if not self.namespace_exists(map) or self.get_map_type(map) != "jmrun" or not self.entry_exists(map, 'JMR_hs_author') or not self.entry_exists(map, 'JMR_hs_time') or not self.entry_exists(map, 'JMR_hs_rdate'):
             return None
@@ -203,8 +199,6 @@ class Database:
         contributed, or None if this map is not in the database, has no
         record, or is not a team map.
         """
-
-        map = map.upper()
 
         if not self.namespace_exists(map) or self.get_map_type(map) != "team" or not self.entry_exists(map, 'jrt_hs_time') or not self.entry_exists(map, 'jrt_hs_rdate') or not self.entry_exists(map, 'jrt_hs_total_players'):
             return None
@@ -254,8 +248,6 @@ class Database:
         Guesses the type of a map from its high score keys.
         Can return \"solo\" or \"team\", or None if this could not be inferred.
         """
-
-        map = map.upper()
 
         if not self.namespace_exists(map):
             return None
