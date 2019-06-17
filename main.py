@@ -43,9 +43,12 @@ class Jumpmaze(commands.Cog):
 
             embed.add_field(name=jmutil.strip_colours(player), value=str(points) + " point" + plural, inline=True)
 
-    @commands.command(help="Returns the records for a specified map.", usage="<lump>")
-    async def map(self, ctx, map):
+    @commands.command(help="Returns the records for a specified map.", usage="<lump> [route]")
+    async def map(self, ctx, map, route=-1):
         map = map.upper()
+        if route >= 1:
+            map += ' (Route %d)' % (route,)
+        
         maptype = database.get_map_type(map)
 
         url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (map,))
@@ -61,24 +64,6 @@ class Jumpmaze(commands.Cog):
         else:
             await ctx.send("Error - No map named %s exists, or it has no set records." % (map,))
             return
-            
-        await ctx.send(embed=embed)
-
-    @commands.command(help="Returns the records for a specified route-based map.", usage="<lump> <route>")
-    async def maproute(self, ctx, map, route):
-        map = map.upper()
-        routens = '%s (Route %s)' % (map, route)
-        maptype = database.get_map_type(routens)
-
-        if maptype != "solo" or not database.entry_exists(routens, 'jrs_hs_time'):
-            await ctx.send("Error - No map named %s exists, it has no set records, or it is not a route-based map." % (map,))
-            return
-
-        url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (routens,))
-        embed = discord.Embed(title="Records for %s (route %s)" % (map, route), colour=discord.Colour.blue(), url=url)
-        embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (routens,)))
-
-        await self.populate_solo_embed(embed, routens)
             
         await ctx.send(embed=embed)
 
@@ -111,7 +96,7 @@ class Jumpmaze(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(help="Returns the specified player's time on a specified map")
+    @commands.command(help="Returns the specified player's time on a specified map", usage="<player> <lump> [route]")
     async def playertime(self, ctx, player, map, route=-1):
         map = map.upper()
         if route >= 1:
