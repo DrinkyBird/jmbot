@@ -5,6 +5,7 @@ import config
 import time
 import db
 import asyncio
+import urllib.parse
 
 
 thread = None
@@ -48,9 +49,9 @@ async def perform_poll(client, database):
             isWR = True
 
         if isWR:
-            url = "%s/maps/%s" % (config.SITE_URL, map)
+            url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (map,))
             embed = discord.Embed(title="A new record for %s has been set!" % (map,), colour=discord.Colour.green(), url=url)
-            embed.set_thumbnail(url="%s/img/maps/%s.png" % (config.SITE_URL, map))
+            embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (map,)))
 
             if maptype == "solo" or maptype == "jmrun":
                 rec = database.get_solo_map_record(map) if maptype == "solo" else database.get_jmrun_map_record(map)
