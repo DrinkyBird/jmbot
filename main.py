@@ -1,9 +1,11 @@
 import discord
 import config
 import sys
+import os
 import db
 import jmutil
 import wrcheck
+import botstatus
 import operator
 import urllib.parse
 from discord.ext import commands
@@ -123,14 +125,31 @@ class Jumpmaze(commands.Cog):
         await ctx.send(embed=embed)
 
 
-@client.command()
+@client.command(hidden=True)
 async def exit(ctx):
-    print(ctx.author.id)
     if ctx.author.id in config.ADMINS:
         await client.close()
         sys.exit()
-    else:
-        await ctx.send("No")
+
+@client.command(hidden=True)
+async def say(ctx, target, msg):
+    if ctx.author.id in config.ADMINS:
+        try:
+            channel = client.get_channel(int(target))
+            await channel.send(msg)
+        except Exception as e:
+            await ctx.send('An error occured (`' + str(e) + '`) - channel doesn\'t exist, is in invalid format, or isn\'t accessible by the bot')
+
+@client.command(hidden=True)
+async def ver(ctx):
+    s = ''
+    s += 'Python: %s\n' % (sys.version)
+    s += 'discord.py: %s\n' % (discord.__version__)
+
+    if hasattr(os, 'uname'):
+        s += 'uname: %s\n' % (str(os.uname()))
+
+    await ctx.send(s)
 
 @client.event
 async def on_ready():
@@ -138,5 +157,6 @@ async def on_ready():
     await client.change_presence(status=discord.Status.online, activity=game)
 
 client.loop.create_task(wrcheck.poll_thread_target(client, database))
+client.loop.create_task(botstatus.change_target(client))
 client.add_cog(Jumpmaze())
 client.run(config.BOT_TOKEN)

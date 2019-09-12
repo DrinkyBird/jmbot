@@ -7,9 +7,6 @@ import db
 import asyncio
 import urllib.parse
 
-
-thread = None
-
 records = {}
 
 def build_records(database):
