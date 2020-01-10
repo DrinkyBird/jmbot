@@ -9,12 +9,15 @@ import wrcheck
 import botstatus
 import operator
 import urllib.parse
+import time
 from discord.ext import commands
 
 firstRun = True
 client = commands.Bot(command_prefix=config.COMMAND_PREFIX)
 database = db.Database(config.JM_DB_PATH)
 webdb = webdb.Database(config.WEB_DB_PATH)
+
+time_in_ms = lambda: time.time() * 1000
 
 class Jumpmaze(commands.Cog):
     """Jumpmaze Discord bot commands"""
@@ -108,7 +111,12 @@ class Jumpmaze(commands.Cog):
 
         numsolomaps = len(solomaps)
 
+        playerscounted = 0
+        timescounted = 0
+        start = time_in_ms()
+
         for player in players:
+            wascounted = False
             scores[player] = 0
 
             maps = database.get_player_maps(player)
@@ -128,9 +136,16 @@ class Jumpmaze(commands.Cog):
                 rank = database.get_entry_rank(map + '_pbs', player, True)
                 scores[player] += rank
 
+                timescounted += 1
+                wascounted = True
+
             scores[player] /= numsolomaps
+            playerscounted += 1
 
         sortedscores = sorted(scores.items(), key=operator.itemgetter(1), reverse=True)
+
+        end = time_in_ms()
+        delta = end - start
 
         embed = discord.Embed(title="Top players for " + wadinfo['name'], colour=discord.Colour.blue())
         for i in range(min(15, len(sortedscores))):
@@ -138,7 +153,7 @@ class Jumpmaze(commands.Cog):
 
             embed.add_field(name="%d. %s" % (i + 1, player), value="Score: %0.3f" % (score,), inline=True)
 
-        await ctx.send(embed=embed)
+        await ctx.send('Calculated from %s times by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
 
     @commands.command(help="Returns the specified player's time on a specified map", usage="<player> <lump> [route]")
     async def playertime(self, ctx, player, map, route=-1):
