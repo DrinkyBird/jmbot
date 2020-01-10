@@ -10,7 +10,7 @@ class Database:
     def __init__(self, filename):
         self.conn = sqlite3.connect(filename, check_same_thread=False)
         self.lockobj = threading.Lock()
-        print('Opened database ', filename)
+        print('Opened Jumpmaze database ', filename)
 
     def lock(self):
         self.lockobj.acquire()

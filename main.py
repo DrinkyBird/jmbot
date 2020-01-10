@@ -3,6 +3,7 @@ import config
 import sys
 import os
 import db
+import webdb
 import jmutil
 import wrcheck
 import botstatus
@@ -13,6 +14,7 @@ from discord.ext import commands
 firstRun = True
 client = commands.Bot(command_prefix=config.COMMAND_PREFIX)
 database = db.Database(config.JM_DB_PATH)
+webdb = webdb.Database(config.WEB_DB_PATH)
 
 class Jumpmaze(commands.Cog):
     """Jumpmaze Discord bot commands"""
@@ -52,9 +54,10 @@ class Jumpmaze(commands.Cog):
             map += ' (Route %d)' % (route,)
         
         maptype = database.get_map_type(map)
+        info = webdb.get_map_by_lump(map)
 
         url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (map,))
-        embed = discord.Embed(title="Records for " + map, colour=discord.Colour.blue(), url=url)
+        embed = discord.Embed(title="Records for %s (%s)" % (map, info['name']), colour=discord.Colour.blue(), url=url)
         embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (map,)))
 
         if maptype == "solo" or maptype == "jmrun":
@@ -69,11 +72,39 @@ class Jumpmaze(commands.Cog):
             
         await ctx.send(embed=embed)
 
-    @commands.command(help="Returns the top 10 players")
-    async def top(self, ctx):
+    @commands.command(help="Returns list of known WADs")
+    async def wads(self, ctx):
+        wads = webdb.get_wads()
+        embed = discord.Embed(title="WAD list", colour=discord.Colour.blue())
+
+        for wad in wads:
+            maps = webdb.get_wad_maps(wad['slug'])
+
+            embed.add_field(name=wad['name'], value='ID: `%s`\n%d maps total' % (wad['slug'], len(maps)), inline=True)
+
+        await ctx.send(embed=embed)
+
+    @commands.command(help="Returns the top 10 players for a given WAD or overall", usage='[wad]')
+    async def top(self, ctx, wad='all'):
+        wadinfo = webdb.get_wad_by_slug(wad)
+        wadmaps = webdb.get_wad_maps(wad)
         players = database.get_all_players()
         solomaps = database.get_solo_map_names()
         scores = {}
+
+        if wadmaps is None and wad != 'all':
+            await ctx.send('No wad %s exists' % (wad,))
+            return
+
+        if wad != 'all':
+            solomaps = []
+            for map in wadmaps:
+                if map['type'] == 'solo':
+                    solomaps.append(map)
+        else:
+            wadinfo = {
+                'name': 'all maps'
+            }
 
         numsolomaps = len(solomaps)
 
@@ -83,6 +114,18 @@ class Jumpmaze(commands.Cog):
             maps = database.get_player_maps(player)
 
             for map in maps:
+                inmaps = False
+
+                if wad != 'all':
+                    for m in solomaps:
+                        if m['lump'] == map:
+                            print(m['lump'])
+                            inmaps = True
+                            break
+
+                    if not inmaps:
+                        continue
+
                 rank = database.get_entry_rank(map + '_pbs', player, True)
                 scores[player] += rank
 
@@ -90,7 +133,7 @@ class Jumpmaze(commands.Cog):
 
         sortedscores = sorted(scores.items(), key=operator.itemgetter(1), reverse=True)
 
-        embed = discord.Embed(title="Top Players", colour=discord.Colour.blue())
+        embed = discord.Embed(title="Top players for " + wadinfo['name'], colour=discord.Colour.blue())
         for i in range(min(15, len(sortedscores))):
             player, score = sortedscores[i]
 
