@@ -29,7 +29,7 @@ def build_records(database):
 
     return ret
 
-async def perform_poll(client, database):
+async def perform_poll(client, database, webdb):
     global records
     print('Polling for WRs.')
 
@@ -46,8 +46,10 @@ async def perform_poll(client, database):
             isWR = True
 
         if isWR:
+            mapinfo = webdb.get_map_by_lump(map)
+
             url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (map,))
-            embed = discord.Embed(title="A new record for %s has been set!" % (map,), colour=discord.Colour.green(), url=url)
+            embed = discord.Embed(title="A new record for %s (%s) has been set!" % (map, mapinfo['name']), colour=discord.Colour.green(), url=url)
             embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (map,)))
 
             if maptype == "solo" or maptype == "jmrun":
@@ -98,7 +100,7 @@ async def perform_poll(client, database):
 
     records = newrecs 
 
-async def poll_thread_target(client, database):
+async def poll_thread_target(client, database, webdb):
     global records
 
     await client.wait_until_ready()
@@ -106,5 +108,5 @@ async def poll_thread_target(client, database):
 
     while not client.is_closed():
         channel = client.get_channel(config.NOTIFY_CHANNEL)
-        await perform_poll(client, database)
+        await perform_poll(client, database, webdb)
         await asyncio.sleep(config.WR_POLL_FREQ)

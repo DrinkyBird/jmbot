@@ -143,6 +143,7 @@ class Jumpmaze(commands.Cog):
     @commands.command(help="Returns the specified player's time on a specified map", usage="<player> <lump> [route]")
     async def playertime(self, ctx, player, map, route=-1):
         map = map.upper()
+        mapinfo = webdb.get_map_by_lump(map)
         if route >= 1:
             map += ' (Route %d)' % (route,)
         ns = map + '_pbs'
@@ -157,7 +158,7 @@ class Jumpmaze(commands.Cog):
         rank = database.get_entry_rank(ns, player, False)
 
         url = config.SITE_URL + urllib.parse.quote("/players/%s" % (player,))
-        embed = discord.Embed(title="%s's time for %s" % (player, map), colour=discord.Colour.teal(), url=url)
+        embed = discord.Embed(title="%s's time for %s (%s)" % (player, map, mapinfo['name']), colour=discord.Colour.teal(), url=url)
         embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (map,)))
 
         embed.add_field(name="Time", value=jmutil.ticstime(time), inline=True)
@@ -198,7 +199,7 @@ async def on_ready():
     game = discord.Game("Jumpmaze")
     await client.change_presence(status=discord.Status.online, activity=game)
 
-client.loop.create_task(wrcheck.poll_thread_target(client, database))
+client.loop.create_task(wrcheck.poll_thread_target(client, database, webdb))
 client.loop.create_task(botstatus.change_target(client))
 client.add_cog(Jumpmaze())
 client.run(config.BOT_TOKEN)
