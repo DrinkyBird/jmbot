@@ -123,3 +123,5 @@ dmypy.json
 .pyre/
 
 config.py
+jumpmaze.db*
+website.db*
