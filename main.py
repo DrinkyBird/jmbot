@@ -119,7 +119,6 @@ class Jumpmaze(commands.Cog):
                 if wad != 'all':
                     for m in solomaps:
                         if m['lump'] == map:
-                            print(m['lump'])
                             inmaps = True
                             break
 
