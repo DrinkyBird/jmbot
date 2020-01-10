@@ -100,7 +100,6 @@ class Database:
         return res
 
     def get_wad_maps(self, slug):
-        print('want maps for %s' % (slug,))
         if not self.wad_exists_by_slug(slug):
             return None
 
@@ -128,8 +127,6 @@ class Database:
                 'par':          row[7],
                 'wad':          self.get_wad_by_id(row[1])
             })
-
-        print('R = ' + str(len(res)))
 
         return res
 
