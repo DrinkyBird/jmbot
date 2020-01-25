@@ -102,7 +102,8 @@ class Jumpmaze(commands.Cog):
         if wad != 'all':
             solomaps = []
             for map in wadmaps:
-                if map['type'] == 'solo':
+                maptype = database.get_map_type(map)
+                if maptype == 'solo' or maptype == 'jmrun':
                     solomaps.append(map)
         else:
             wadinfo = {
