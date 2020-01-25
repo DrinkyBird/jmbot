@@ -141,7 +141,9 @@ class Jumpmaze(commands.Cog):
                 wascounted = True
 
             scores[player] /= numsolomaps
-            playerscounted += 1
+            
+            if wascounted:
+                playerscounted += 1
 
         sortedscores = sorted(scores.items(), key=operator.itemgetter(1), reverse=True)
 
