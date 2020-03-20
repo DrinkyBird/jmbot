@@ -10,6 +10,7 @@ import botstatus
 import operator
 import urllib.parse
 import time
+import math
 from discord.ext import commands
 
 firstRun = True
@@ -87,8 +88,7 @@ class Jumpmaze(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(help="Returns the top 10 players for a given WAD or overall", usage='[wad]')
-    async def top(self, ctx, wad='all'):
+    async def do_top(self, ctx, wad, algo='sean'):
         wadinfo = webdb.get_wad_by_slug(wad)
         wadmaps = webdb.get_wad_maps(wad)
         players = database.get_all_players()
@@ -134,13 +134,19 @@ class Jumpmaze(commands.Cog):
                     if not inmaps:
                         continue
 
-                rank = database.get_entry_rank(map + '_pbs', player, True)
-                scores[player] += rank
+                numentries = len(database.get_map_records(map))
+                rank = database.get_entry_rank(map + '_pbs', player, False)
+                
+                if algo == 'sean':
+                    scores[player] += rank
+                elif algo == 'snail':
+                    scores[player] += math.sqrt(numentries) / math.sqrt(rank / 10)
 
                 timescounted += 1
                 wascounted = True
-
-            scores[player] /= numsolomaps
+                
+            if algo == 'sean':
+                scores[player] /= numsolomaps
             
             if wascounted:
                 playerscounted += 1
@@ -156,7 +162,15 @@ class Jumpmaze(commands.Cog):
 
             embed.add_field(name="%d. %s" % (i + 1, player), value="Score: %0.3f" % (score,), inline=True)
 
-        await ctx.send('Calculated from %s times by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
+        await ctx.send('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
+        
+    @commands.command(help="Returns the top 10 players for a given WAD or overall (using Sean's points formula)", usage='[wad]')
+    async def top(self, ctx, wad='all'):
+        await self.do_top(ctx, wad, 'sean')
+        
+    @commands.command(help="Returns the top 10 players for a given WAD or overall (using Snail's points formula)", usage='[wad]')
+    async def top2(self, ctx, wad='all'):
+        await self.do_top(ctx, wad, 'snail')
 
     @commands.command(help="Returns the specified player's time on a specified map", usage="<player> <lump> [route]")
     async def playertime(self, ctx, player, map, route=-1):
