@@ -135,11 +135,12 @@ class Jumpmaze(commands.Cog):
                         continue
 
                 numentries = len(database.get_map_records(map))
-                rank = database.get_entry_rank(map + '_pbs', player, False)
                 
                 if algo == 'sean':
+                    rank = database.get_entry_rank(map + '_pbs', player, True)
                     scores[player] += rank
                 elif algo == 'snail':
+                    rank = database.get_entry_rank(map + '_pbs', player, False)
                     scores[player] += math.sqrt(numentries) / math.sqrt(rank / 10)
 
                 timescounted += 1
