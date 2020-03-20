@@ -20,6 +20,9 @@ webdb = webdb.Database(config.WEB_DB_PATH)
 
 time_in_ms = lambda: time.time() * 1000
 
+ALGO_SEAN = 0
+ALGO_SNAIL = 1
+
 class Jumpmaze(commands.Cog):
     """Jumpmaze Discord bot commands"""
 
@@ -88,7 +91,7 @@ class Jumpmaze(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    async def do_top(self, ctx, wad, algo='sean'):
+    async def do_top(self, ctx, wad, algo=ALGO_SEAN):
         wadinfo = webdb.get_wad_by_slug(wad)
         wadmaps = webdb.get_wad_maps(wad)
         players = database.get_all_players()
@@ -136,17 +139,17 @@ class Jumpmaze(commands.Cog):
 
                 numentries = len(database.get_map_records(map))
                 
-                if algo == 'sean':
+                if algo == ALGO_SEAN:
                     rank = database.get_entry_rank(map + '_pbs', player, True)
                     scores[player] += rank
-                elif algo == 'snail':
+                elif algo == ALGO_SNAIL:
                     rank = database.get_entry_rank(map + '_pbs', player, False)
                     scores[player] += math.sqrt(numentries) / math.sqrt(rank / 10)
 
                 timescounted += 1
                 wascounted = True
                 
-            if algo == 'sean':
+            if algo == ALGO_SEAN:
                 scores[player] /= numsolomaps
             
             if wascounted:
@@ -167,11 +170,11 @@ class Jumpmaze(commands.Cog):
         
     @commands.command(help="Returns the top 10 players for a given WAD or overall (using Sean's points formula)", usage='[wad]')
     async def top(self, ctx, wad='all'):
-        await self.do_top(ctx, wad, 'sean')
+        await self.do_top(ctx, wad, ALGO_SEAN)
         
     @commands.command(help="Returns the top 10 players for a given WAD or overall (using Snail's points formula)", usage='[wad]')
     async def top2(self, ctx, wad='all'):
-        await self.do_top(ctx, wad, 'snail')
+        await self.do_top(ctx, wad, ALGO_SNAIL)
 
     @commands.command(help="Returns the specified player's time on a specified map", usage="<player> <lump> [route]")
     async def playertime(self, ctx, player, map, route=-1):
