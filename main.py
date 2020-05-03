@@ -11,6 +11,7 @@ import operator
 import urllib.parse
 import time
 import math
+import jimgit
 from discord.ext import commands
 
 firstRun = True
@@ -238,4 +239,5 @@ async def on_ready():
 client.loop.create_task(wrcheck.poll_thread_target(client, database, webdb))
 client.loop.create_task(botstatus.change_target(client))
 client.add_cog(Jumpmaze())
+client.add_cog(jimgit.JimGit())
 client.run(config.BOT_TOKEN)
