@@ -93,81 +93,82 @@ class Jumpmaze(commands.Cog):
         await ctx.send(embed=embed)
 
     async def do_top(self, ctx, wad, algo=ALGO_SEAN):
-        wadinfo = webdb.get_wad_by_slug(wad)
-        wadmaps = webdb.get_wad_maps(wad)
-        players = database.get_all_players()
-        solomaps = database.get_solo_map_names()
-        scores = {}
+        with ctx.typing():
+            wadinfo = webdb.get_wad_by_slug(wad)
+            wadmaps = webdb.get_wad_maps(wad)
+            players = database.get_all_players()
+            solomaps = database.get_solo_map_names()
+            scores = {}
 
-        if wadmaps is None and wad != 'all':
-            await ctx.send('No wad %s exists' % (wad,))
-            return
+            if wadmaps is None and wad != 'all':
+                await ctx.send('No wad %s exists' % (wad,))
+                return
 
-        if wad != 'all':
-            solomaps = []
-            for map in wadmaps:
-                maptype = database.get_map_type(map['lump'])
-                if maptype == 'solo' or maptype == 'jmrun':
-                    solomaps.append(map)
-        else:
-            wadinfo = {
-                'name': 'all maps'
-            }
+            if wad != 'all':
+                solomaps = []
+                for map in wadmaps:
+                    maptype = database.get_map_type(map['lump'])
+                    if maptype == 'solo' or maptype == 'jmrun':
+                        solomaps.append(map)
+            else:
+                wadinfo = {
+                    'name': 'all maps'
+                }
 
-        numsolomaps = len(solomaps)
+            numsolomaps = len(solomaps)
 
-        playerscounted = 0
-        timescounted = 0
-        start = time_in_ms()
+            playerscounted = 0
+            timescounted = 0
+            start = time_in_ms()
 
-        for player in players:
-            wascounted = False
-            scores[player] = 0
+            for player in players:
+                wascounted = False
+                scores[player] = 0
 
-            maps = database.get_player_maps(player)
+                maps = database.get_player_maps(player)
 
-            for map in maps:
-                inmaps = False
+                for map in maps:
+                    inmaps = False
 
-                if wad != 'all':
-                    for m in solomaps:
-                        if m['lump'] == map:
-                            inmaps = True
-                            break
+                    if wad != 'all':
+                        for m in solomaps:
+                            if m['lump'] == map:
+                                inmaps = True
+                                break
 
-                    if not inmaps:
-                        continue
+                        if not inmaps:
+                            continue
 
-                numentries = len(database.get_map_records(map))
-                
+                    numentries = len(database.get_map_records(map))
+
+                    if algo == ALGO_SEAN:
+                        rank = database.get_entry_rank(map + '_pbs', player, True)
+                        scores[player] += rank
+                    elif algo == ALGO_SNAIL:
+                        rank = database.get_entry_rank(map + '_pbs', player, False)
+                        scores[player] += math.sqrt(numentries) / math.sqrt(rank / 10)
+
+                    timescounted += 1
+                    wascounted = True
+
                 if algo == ALGO_SEAN:
-                    rank = database.get_entry_rank(map + '_pbs', player, True)
-                    scores[player] += rank
-                elif algo == ALGO_SNAIL:
-                    rank = database.get_entry_rank(map + '_pbs', player, False)
-                    scores[player] += math.sqrt(numentries) / math.sqrt(rank / 10)
+                    scores[player] /= numsolomaps
 
-                timescounted += 1
-                wascounted = True
-                
-            if algo == ALGO_SEAN:
-                scores[player] /= numsolomaps
-            
-            if wascounted:
-                playerscounted += 1
+                if wascounted:
+                    playerscounted += 1
 
-        sortedscores = sorted(scores.items(), key=operator.itemgetter(1), reverse=True)
+            sortedscores = sorted(scores.items(), key=operator.itemgetter(1), reverse=True)
 
-        end = time_in_ms()
-        delta = end - start
+            end = time_in_ms()
+            delta = end - start
 
-        embed = discord.Embed(title="Top players for " + wadinfo['name'], colour=discord.Colour.blue())
-        for i in range(min(15, len(sortedscores))):
-            player, score = sortedscores[i]
+            embed = discord.Embed(title="Top players for " + wadinfo['name'], colour=discord.Colour.blue())
+            for i in range(min(15, len(sortedscores))):
+                player, score = sortedscores[i]
 
-            embed.add_field(name="%d. %s" % (i + 1, player), value="Score: %0.3f" % (score,), inline=True)
+                embed.add_field(name="%d. %s" % (i + 1, player), value="Score: %0.3f" % (score,), inline=True)
 
-        await ctx.send('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
+            await ctx.send('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
         
     @commands.command(help="Returns the top 10 players for a given WAD or overall (using Sean's points formula)", usage='[wad]')
     async def top(self, ctx, wad='all'):
