@@ -60,11 +60,12 @@ async def perform_poll(client, database, webdb):
                 embed.add_field(name="Record Date", value=jmutil.format_date(rec['date']), inline=False)
                 embed.add_field(name="Record Set By", value=jmutil.strip_colours(rec['author']), inline=False)
                 
-                for i in range(min(3, len(l))):    
-                    user, time = l[i]
-                    rank = database.get_entry_rank(map + '_pbs', user, False)
+                if l is not None:
+                    for i in range(min(3, len(l))):    
+                        user, time = l[i]
+                        rank = database.get_entry_rank(map + '_pbs', user, False)
 
-                    embed.add_field(name=str(rank) + ". " + user, value=jmutil.ticstime(time), inline=True)
+                        embed.add_field(name=str(rank) + ". " + user, value=jmutil.ticstime(time), inline=True)
             elif maptype == "team":
                 recs = data
 
