@@ -146,7 +146,7 @@ class Database:
         if not self.map_exists_by_lump(lump):
             return {
                 'id':               -1,
-                'lump':             lump.
+                'lump':             lump,
                 'name':             'Unknown',
                 'author':           'Unknown',
                 'difficulty':       'Unknown',
