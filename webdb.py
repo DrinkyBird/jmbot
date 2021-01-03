@@ -144,7 +144,16 @@ class Database:
 
     def get_map_by_lump(self, lump):
         if not self.map_exists_by_lump(lump):
-            return None
+            return {
+                'id':               -1,
+                'lump':             lump.
+                'name':             'Unknown',
+                'author':           'Unknown',
+                'difficulty':       'Unknown',
+                'par':              'Unknown',
+                'wad':              'Unknown'
+            }
+                
 
         self.lock()
 
