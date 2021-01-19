@@ -204,13 +204,12 @@ class Jumpmaze(commands.Cog):
         embed.add_field(name="Rank", value=str(rank), inline=True)
         embed.add_field(name="Date", value=jmutil.format_timestamp(database.get_timestamp(ns, player)), inline=True)
 
-        await ctx.reply(embed=embed)
+        await ctx.send(embed=embed)
 
 
 @client.command(hidden=True)
 async def exit(ctx):
     if ctx.author.id in config.ADMINS:
-        await ctx.message.reply('wtf', mention_author=False)
         await client.close()
         sys.exit()
 
@@ -232,7 +231,7 @@ async def ver(ctx):
     if hasattr(os, 'uname'):
         s += 'uname: %s\n' % (str(os.uname()))
 
-    await ctx.reply(s, mention_author=False)
+    await ctx.send(s)
 
 @client.event
 async def on_ready():
