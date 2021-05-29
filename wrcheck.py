@@ -31,7 +31,6 @@ def build_records(database):
 
 async def perform_poll(client, database, webdb):
     global records
-    print('Polling for WRs.')
 
     newrecs = build_records(database)
 
