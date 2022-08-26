@@ -1,3 +1,4 @@
+import asyncio
 import discord
 import config
 import sys
@@ -16,6 +17,7 @@ from discord.ext import commands
 
 firstRun = True
 intents = discord.Intents.default()
+intents.message_content = True
 client = commands.Bot(command_prefix=config.COMMAND_PREFIX, intents=intents)
 database = db.Database(config.JM_DB_PATH)
 webdb = webdb.Database(config.WEB_DB_PATH)
@@ -242,6 +244,11 @@ async def on_ready():
     game = discord.Game("Jumpmaze")
     await client.change_presence(status=discord.Status.online, activity=game)
 
-client.add_cog(Jumpmaze())
-client.add_cog(jimgit.JimGit())
-client.run(config.BOT_TOKEN)
+async def main():
+    async with client:
+        await client.add_cog(Jumpmaze())
+        await client.add_cog(jimgit.JimGit())
+        await client.start(config.BOT_TOKEN)
+
+if __name__ == '__main__':
+    asyncio.run(main())
