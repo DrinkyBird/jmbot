@@ -237,11 +237,11 @@ async def ver(ctx):
 
 @client.event
 async def on_ready():
+    client.loop.create_task(wrcheck.poll_thread_target(client, database, webdb))
+    client.loop.create_task(botstatus.change_target(client))
     game = discord.Game("Jumpmaze")
     await client.change_presence(status=discord.Status.online, activity=game)
 
-client.loop.create_task(wrcheck.poll_thread_target(client, database, webdb))
-client.loop.create_task(botstatus.change_target(client))
 client.add_cog(Jumpmaze())
 client.add_cog(jimgit.JimGit())
 client.run(config.BOT_TOKEN)
