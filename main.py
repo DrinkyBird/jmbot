@@ -15,7 +15,8 @@ import jimgit
 from discord.ext import commands
 
 firstRun = True
-client = commands.Bot(command_prefix=config.COMMAND_PREFIX)
+intents = discord.Intents.default()
+client = commands.Bot(command_prefix=config.COMMAND_PREFIX, intents=intents)
 database = db.Database(config.JM_DB_PATH)
 webdb = webdb.Database(config.WEB_DB_PATH)
 
