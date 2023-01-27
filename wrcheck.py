@@ -49,7 +49,7 @@ async def perform_poll(client, database, webdb):
 
             url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (map,))
             embed = discord.Embed(title="A new record for %s (%s) has been set!" % (map, mapinfo['name']), colour=discord.Colour.green(), url=url)
-            embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (map,)))
+            embed.set_thumbnail(url=config.IMAGES_URL + urllib.parse.quote("%s.png" % (map,)))
 
             if maptype == "solo" or maptype == "jmrun":
                 rec = database.get_solo_map_record(map) if maptype == "solo" else database.get_jmrun_map_record(map)
