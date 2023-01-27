@@ -96,8 +96,6 @@ class Jumpmaze(commands.Cog):
         await ctx.send(embed=embed)
 
     async def do_top(self, ctx, wad, algo=ALGO_SEAN):
-        await ctx.trigger_typing()
-
         wadinfo = webdb.get_wad_by_slug(wad)
         wadmaps = webdb.get_wad_maps(wad)
         players = database.get_all_players()
@@ -176,11 +174,13 @@ class Jumpmaze(commands.Cog):
         
     @commands.command(help="Returns the top 10 players for a given WAD or overall (using Sean's points formula)", usage='[wad]')
     async def top(self, ctx, wad='all'):
-        await self.do_top(ctx, wad, ALGO_SEAN)
+        async with ctx.typing():
+            await self.do_top(ctx, wad, ALGO_SEAN)
         
     @commands.command(help="Returns the top 10 players for a given WAD or overall (using Snail's points formula)", usage='[wad]')
     async def top2(self, ctx, wad='all'):
-        await self.do_top(ctx, wad, ALGO_SNAIL)
+        async with ctx.typing():
+            await self.do_top(ctx, wad, ALGO_SNAIL)
 
     @commands.command(help="Returns the specified player's time on a specified map", usage="<player> <lump> [route]")
     async def playertime(self, ctx, player, map, route=-1):
