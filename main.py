@@ -69,7 +69,7 @@ class Jumpmaze(commands.Cog):
 
         url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (map,))
         embed = discord.Embed(title="Records for %s (%s)" % (map, info['name']), colour=discord.Colour.blue(), url=url)
-        embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (map,)))
+        embed.set_thumbnail(url=config.IMAGES_URL + urllib.parse.quote("%s.png" % (map,)))
 
         if maptype == "solo" or maptype == "jmrun":
             await self.populate_solo_embed(embed, map)
@@ -201,7 +201,7 @@ class Jumpmaze(commands.Cog):
 
         url = config.SITE_URL + urllib.parse.quote("/players/%s" % (player,))
         embed = discord.Embed(title="%s's time for %s (%s)" % (player, map, mapinfo['name']), colour=discord.Colour.teal(), url=url)
-        embed.set_thumbnail(url=config.SITE_URL + urllib.parse.quote("/img/maps/%s.png" % (map,)))
+        embed.set_thumbnail(url=config.IMAGES_URL + urllib.parse.quote("%s.png" % (map,)))
 
         embed.add_field(name="Time", value=jmutil.ticstime(time), inline=True)
         embed.add_field(name="Rank", value=str(rank), inline=True)

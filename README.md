@@ -21,7 +21,8 @@ NOTIFY_CHANNEL=563395640357421057
 WR_POLL_FREQ = 60
 
 # Location of your JM site
-SITE_URL = "https://jm.csnxs.uk"
+SITE_URL = "https://firestick.games/jumpmaze"
+IMAGES_URL = "https://firestick.games/assets/jmmaps/"
 
 COMMAND_PREFIX = '%'
 ```
