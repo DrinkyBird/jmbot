@@ -13,6 +13,13 @@ import urllib.parse
 import time
 import math
 from discord.ext import commands
+from discord import app_commands
+
+import requests
+import logging
+import http.client
+import urllib3
+import asyncio
 
 firstRun = True
 intents = discord.Intents.default()
@@ -25,6 +32,27 @@ time_in_ms = lambda: time.time() * 1000
 
 ALGO_SEAN = 0
 ALGO_SNAIL = 1
+
+
+async def map_lump_autocomplete(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    results = webdb.map_search(current, 25)
+    return [
+        app_commands.Choice(name=f"{result[0]} - {result[1]}", value=result[0]) for result in results
+    ]
+
+
+async def wad_autocomplete(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    results = webdb.wad_search(current, 24)
+    out = [ app_commands.Choice(name="All WADs", value="all") ]
+    for result in results:
+        out.append(app_commands.Choice(name=result[1], value=result[0]))
+    print(out)
+    return out
+
+
+async def player_autocomplete(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    return [ app_commands.Choice(name=player, value=player) for player in database.get_all_players() if current in player ][:25]
+
 
 class Jumpmaze(commands.Cog):
     """Jumpmaze Discord bot commands"""
@@ -57,8 +85,10 @@ class Jumpmaze(commands.Cog):
 
             embed.add_field(name=jmutil.strip_colours(player), value=str(points) + " point" + plural, inline=True)
 
-    @commands.command(help="Returns the records for a specified map.", usage="<lump> [route]")
-    async def map(self, ctx, map, route=-1):
+    @app_commands.command(name="map", description="Returns the records for a specified map.")
+    @app_commands.describe(map="Lump name", route="Map route")
+    @app_commands.autocomplete(map=map_lump_autocomplete)
+    async def map(self, interaction: discord.Interaction, map: str, route: int = -1):
         map = map.upper()
         if route >= 1:
             map += ' (Route %d)' % (route,)
@@ -77,13 +107,13 @@ class Jumpmaze(commands.Cog):
             await self.populate_team_embed(embed, map)
 
         else:
-            await ctx.send("Error - No map named %s exists, or it has no set records." % (map,))
+            await interaction.response.send_message(f"Error - No map named `{map}` exists, or it has no set records.", ephemeral=True)
             return
             
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @commands.command(help="Returns list of known WADs")
-    async def wads(self, ctx):
+    @app_commands.command(name="wads", description="Returns list of known WADs")
+    async def wads(self, interaction: discord.Interaction):
         wads = webdb.get_wads()
         embed = discord.Embed(title="WAD list", colour=discord.Colour.blue())
 
@@ -92,9 +122,9 @@ class Jumpmaze(commands.Cog):
 
             embed.add_field(name=wad['name'], value='ID: `%s`\n%d maps total' % (wad['slug'], len(maps)), inline=True)
 
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    async def do_top(self, ctx, wad, algo=ALGO_SEAN):
+    async def do_top(self, interaction: discord.Interaction, wad: str, algo: int = ALGO_SEAN):
         wadinfo = webdb.get_wad_by_slug(wad)
         wadmaps = webdb.get_wad_maps(wad)
         players = database.get_all_players()
@@ -102,7 +132,7 @@ class Jumpmaze(commands.Cog):
         scores = {}
 
         if wadmaps is None and wad != 'all':
-            await ctx.send('No wad %s exists' % (wad,))
+            await interaction.response.send_message(f'No wad `{wad}` exists', ephemeral=True)
             return
 
         if wad != 'all':
@@ -169,20 +199,27 @@ class Jumpmaze(commands.Cog):
 
             embed.add_field(name="%d. %s" % (i + 1, player), value="Score: %0.3f" % (score,), inline=True)
 
-        await ctx.send('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
+        await interaction.response.send_message('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
         
-    @commands.command(help="Returns the top 10 players for a given WAD or overall (using Sean's points formula)", usage='[wad]')
-    async def top(self, ctx, wad='all'):
-        async with ctx.typing():
-            await self.do_top(ctx, wad, ALGO_SEAN)
+    @app_commands.command(name="top", description="Returns the top 10 players for a given WAD or overall (using Sean's points formula)")
+    @app_commands.describe(wad="ID of the WAD, defaults to all")
+    @app_commands.autocomplete(wad=wad_autocomplete)
+    async def top(self, interaction: discord.Interaction, wad: str):
+        await self.do_top(interaction, wad, ALGO_SEAN)
         
-    @commands.command(help="Returns the top 10 players for a given WAD or overall (using Snail's points formula)", usage='[wad]')
-    async def top2(self, ctx, wad='all'):
-        async with ctx.typing():
-            await self.do_top(ctx, wad, ALGO_SNAIL)
+    @app_commands.command(name="top2", description="Returns the top 10 players for a given WAD or overall (using Snail's points formula)")
+    @app_commands.describe(wad="ID of the WAD, defaults to all")
+    @app_commands.autocomplete(wad=wad_autocomplete)
+    async def top2(self, interaction: discord.Interaction, wad: str):
+        await self.do_top(interaction, wad, ALGO_SNAIL)
 
-    @commands.command(help="Returns the specified player's time on a specified map", usage="<player> <lump> [route]")
-    async def playertime(self, ctx, player, map, route=-1):
+    @app_commands.command(name="playertime", description="Returns the specified player's time on a specified map")
+    @app_commands.describe(player="Player username")
+    @app_commands.autocomplete(player=player_autocomplete)
+    @app_commands.describe(map="Map lump name")
+    @app_commands.autocomplete(map=map_lump_autocomplete)
+    @app_commands.describe(route="Map route")
+    async def playertime(self, interaction: discord.Interaction, player: str, map: str, route: int = -1):
         map = map.upper()
         mapinfo = webdb.get_map_by_lump(map)
         if route >= 1:
@@ -192,7 +229,7 @@ class Jumpmaze(commands.Cog):
         player = player.lower()
 
         if not database.entry_exists(ns, player):
-            await ctx.send("Error - No player named %s exists, or they have not set a time for %s." % (player, map))
+            await interaction.response.send_message(f"Error - No player named {player} exists, or they have not set a time for {map}.", ephemeral=True)
             return
 
         time = int(database.get_entry(ns, player))
@@ -206,7 +243,7 @@ class Jumpmaze(commands.Cog):
         embed.add_field(name="Rank", value=str(rank), inline=True)
         embed.add_field(name="Date", value=jmutil.format_timestamp(database.get_timestamp(ns, player)), inline=True)
 
-        await ctx.reply(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
 
 @client.command(hidden=True)
@@ -238,12 +275,24 @@ async def ver(ctx):
 
 @client.event
 async def on_ready():
+    for guild in client.guilds:
+        if guild.id != 563395608489099264:
+            continue
+        client.tree.copy_global_to(guild=guild)
+        await client.tree.sync(guild=guild)
     client.loop.create_task(wrcheck.poll_thread_target(client, database, webdb))
     client.loop.create_task(botstatus.change_target(client))
     game = discord.Game("Jumpmaze")
     await client.change_presence(status=discord.Status.online, activity=game)
 
 async def main():
+    http.client.HTTPConnection.debuglevel = 1
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
+
     async with client:
         await client.add_cog(Jumpmaze())
         await client.start(config.BOT_TOKEN)

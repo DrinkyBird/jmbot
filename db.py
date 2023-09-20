@@ -12,38 +12,24 @@ class Database:
         self.lockobj = threading.Lock()
         print('Opened Jumpmaze database ', filename)
 
-    def lock(self):
-        self.lockobj.acquire()
-
-    def unlock(self):
-        self.lockobj.release()
-
     def get_cursor(self):
         return self.conn.cursor()
 
     def namespace_exists(self, namespace):
         """Returns True if this namespace exists, otherwise returns False"""
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT * FROM "+TABLENAME+" WHERE Namespace=?", (namespace,))
         row = c.fetchone()
 
-        self.unlock()
-
         return row != None
 
     def entry_exists(self, namespace, key):
         """Returns True if this key exists in this namespace exists, otherwise returns False"""
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT * FROM "+TABLENAME+" WHERE Namespace=? AND KeyName=?", (namespace, key))
         row = c.fetchone()
-
-        self.unlock()
 
         return row != None
 
@@ -52,13 +38,9 @@ class Database:
         if not self.entry_exists(namespace, key):
             return None
 
-        self.lock()
-
         c = self.get_cursor()
         c.execute("SELECT Value FROM "+TABLENAME+" WHERE Namespace=? AND KeyName=?", (namespace, key))
         row = c.fetchone()
-
-        self.unlock()
 
         return row[0]
 
@@ -66,13 +48,9 @@ class Database:
         if not self.entry_exists(namespace, key):
             return None
 
-        self.lock()
-
         c = self.get_cursor()
         c.execute("SELECT CAST(Timestamp AS INTEGER) FROM "+TABLENAME+" WHERE Namespace=? AND KeyName=?", (namespace, key))
         row = c.fetchone()
-
-        self.unlock()
 
         return row[0]
 
@@ -80,13 +58,9 @@ class Database:
     def get_entries(self, namespace):
         """Returns a dictionary of all key: value entries in this namespace"""
 
-        self.lock()
-
         c = self.get_cursor()
         c.execute("SELECT KeyName,Value FROM "+TABLENAME+" WHERE Namespace=?", (namespace,))
         rows = c.fetchall()
-
-        self.unlock()
 
         return dict(rows)
 
@@ -100,8 +74,6 @@ class Database:
         if not self.entry_exists(namespace, key):
             return -1
 
-        self.lock()
-
         c = self.get_cursor()
 
         cmd = "SELECT COUNT(*) FROM "+TABLENAME+" WHERE Namespace=? AND CAST(Value AS INTEGER)"
@@ -109,8 +81,6 @@ class Database:
         cmd = cmd + "(SELECT CAST(Value AS INTEGER) FROM "+TABLENAME+" WHERE Namespace=? and KeyName=?)"
         c.execute(cmd, (namespace, namespace, key))
         row = c.fetchone()
-
-        self.unlock()
 
         if row is None:
             return -1
@@ -124,14 +94,10 @@ class Database:
         (e.g. JPX2BDEM)
         """
 
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT DISTINCT Namespace FROM "+TABLENAME+" WHERE Namespace NOT LIKE '%_pbs'")
         rows = c.fetchall()
-
-        self.unlock()
 
         return [i[0] for i in rows]
 
@@ -140,14 +106,10 @@ class Database:
         Returns the lump names for all solo maps
         """
 
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT DISTINCT Namespace FROM "+TABLENAME+" WHERE Namespace LIKE '%_pbs'")
         rows = c.fetchall()
-
-        self.unlock()
 
         return [i[0][:-4] for i in rows]
 
@@ -162,13 +124,9 @@ class Database:
         if not self.namespace_exists(ns):
             return None
 
-        self.lock()
-
         c = self.get_cursor()
         c.execute("SELECT KeyName,CAST(Value AS INTEGER) FROM "+TABLENAME+" WHERE Namespace=? ORDER BY CAST(Value AS INTEGER) ASC", (ns,))
         rows = c.fetchall()
-
-        self.unlock()
 
         return rows
 
@@ -222,8 +180,6 @@ class Database:
         helpersbyname = {} 
 
         helpercount = int(self.get_entry(map, 'jrt_hs_total_players'))
-        
-        self.lock()
 
         c = self.get_cursor()
 
@@ -249,8 +205,6 @@ class Database:
             k = v['name']
             p = v['points']
             helpersbyname[k] = p
-
-        self.unlock()
 
         return {
             'time':                 int(self.get_entry(map, 'jrt_hs_time')),
@@ -282,15 +236,11 @@ class Database:
         map.
         """
 
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT DISTINCT KeyName FROM "+TABLENAME+" WHERE Namespace LIKE '%_pbs'")
 
         rows = c.fetchall()
-
-        self.unlock()
 
         for i in range(len(rows)):
             rows[i] = rows[i][0]
@@ -302,15 +252,11 @@ class Database:
         Returns a list of maps this player has set personal best times for.
         """
 
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT DISTINCT Namespace FROM "+TABLENAME+" WHERE Namespace LIKE '%_pbs' AND KeyName=?", (player,))
 
         rows = c.fetchall()
-
-        self.unlock()
 
         for i in range(len(rows)):
             rows[i] = rows[i][0][:-4]

@@ -8,24 +8,14 @@ class Database:
         self.lockobj = threading.Lock()
         print('Opened website database ', filename)
 
-    def lock(self):
-        self.lockobj.acquire()
-
-    def unlock(self):
-        self.lockobj.release()
-
     def get_cursor(self):
         return self.conn.cursor()
 
     def wad_exists_by_id(self, id):
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT * FROM wads WHERE id=?", (id,))
         row = c.fetchone()
-
-        self.unlock()
 
         return row != None
 
@@ -33,14 +23,10 @@ class Database:
         if not self.wad_exists_by_id(id):
             return None
 
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT name,slug FROM wads WHERE id=?", (id,))
         row = c.fetchone()
-
-        self.unlock()
 
         return {
             'id':       id,
@@ -49,14 +35,10 @@ class Database:
         }
 
     def wad_exists_by_slug(self, id):
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT * FROM wads WHERE slug LIKE ?", (id,))
         row = c.fetchone()
-
-        self.unlock()
 
         return row != None
 
@@ -64,14 +46,10 @@ class Database:
         if not self.wad_exists_by_slug(slug):
             return None
 
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT id,name,slug FROM wads WHERE slug LIKE ?", (slug,))
         row = c.fetchone()
-
-        self.unlock()
 
         return {
             'id':       row[0],
@@ -80,14 +58,10 @@ class Database:
         }
 
     def get_wads(self):
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT id,name,slug FROM wads")
         rows = c.fetchall()
-
-        self.unlock()
 
         res = []
         for row in rows:
@@ -105,14 +79,10 @@ class Database:
 
         wad = self.get_wad_by_slug(slug)
 
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT id,wad_id,lump,name,author,type,difficulty,par FROM maps WHERE wad_id=?", (wad['id'],))
         rows = c.fetchall()
-
-        self.unlock()
 
         res = []
 
@@ -131,14 +101,10 @@ class Database:
         return res
 
     def map_exists_by_lump(self, lump):
-        self.lock()
-
         c = self.get_cursor()
 
         c.execute("SELECT * FROM maps WHERE lump LIKE ?", (lump,))
         row = c.fetchone()
-
-        self.unlock()
 
         return row != None
 
@@ -153,16 +119,11 @@ class Database:
                 'par':              'Unknown',
                 'wad':              'Unknown'
             }
-                
-
-        self.lock()
 
         c = self.get_cursor()
 
         c.execute("SELECT id,wad_id,lump,name,author,type,difficulty,par FROM maps WHERE lump LIKE ?", (lump,))
         row = c.fetchone()
-
-        self.unlock()
 
         return {
             'id':           row[0],
@@ -174,3 +135,33 @@ class Database:
             'par':          row[7],
             'wad':          self.get_wad_by_id(row[1])
         }
+
+    def map_search(self, term: str, limit: int) -> list[tuple]:
+        c = self.get_cursor()
+
+        wcterm = term + "%"
+        wcwcterm = "%" + term + "%"
+        c.execute(f"SELECT lump,name FROM maps WHERE lump LIKE ? OR name LIKE ? ORDER BY lump ASC LIMIT {limit}", (wcterm, wcwcterm))
+        rows = c.fetchall()
+
+        out = []
+
+        for row in rows:
+            out.append((row[0], row[1]))
+
+        return out
+
+    def wad_search(self, term: str, limit: int) -> list[tuple]:
+        c = self.get_cursor()
+
+        slugterm = term + "%"
+        nameterm = "%" + term + "%"
+        c.execute(f"SELECT slug,name FROM wads WHERE slug LIKE ? OR name LIKE ? ORDER BY name ASC LIMIT {limit}", (slugterm, nameterm))
+        rows = c.fetchall()
+
+        out = []
+
+        for row in rows:
+            out.append((row[0], row[1]))
+
+        return out
