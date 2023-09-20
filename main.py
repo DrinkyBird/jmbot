@@ -12,7 +12,6 @@ import operator
 import urllib.parse
 import time
 import math
-import jimgit
 from discord.ext import commands
 
 firstRun = True
@@ -247,7 +246,6 @@ async def on_ready():
 async def main():
     async with client:
         await client.add_cog(Jumpmaze())
-        await client.add_cog(jimgit.JimGit())
         await client.start(config.BOT_TOKEN)
 
 if __name__ == '__main__':
