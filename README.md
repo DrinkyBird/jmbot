@@ -25,6 +25,9 @@ SITE_URL = "https://firestick.games/jumpmaze"
 IMAGES_URL = "https://firestick.games/assets/jmmaps/"
 
 COMMAND_PREFIX = '%'
+
+# Enable debugging spam
+DEBUG = False
 ```
 
 3. `python main.py`
