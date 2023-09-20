@@ -276,8 +276,6 @@ async def ver(ctx):
 @client.event
 async def on_ready():
     for guild in client.guilds:
-        if guild.id != 563395608489099264:
-            continue
         client.tree.copy_global_to(guild=guild)
         await client.tree.sync(guild=guild)
     client.loop.create_task(wrcheck.poll_thread_target(client, database, webdb))
