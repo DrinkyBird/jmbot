@@ -46,7 +46,6 @@ async def wad_autocomplete(interaction: discord.Interaction, current: str) -> li
     out = [ app_commands.Choice(name="All WADs", value="all") ]
     for result in results:
         out.append(app_commands.Choice(name=result[1], value=result[0]))
-    print(out)
     return out
 
 
