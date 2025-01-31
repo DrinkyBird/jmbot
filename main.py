@@ -199,7 +199,6 @@ class Jumpmaze(commands.Cog):
 
             embed.add_field(name="%d. %s" % (i + 1, player), value="Score: %0.3f" % (score,), inline=True)
 
-        print('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta))
         await interaction.followup.send('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
         
     @app_commands.command(name="top", description="Returns the top 10 players for a given WAD or overall (using Sean's points formula)")
