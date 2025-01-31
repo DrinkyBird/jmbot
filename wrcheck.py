@@ -7,6 +7,8 @@ import db
 import asyncio
 import urllib.parse
 
+import webdb
+
 records = {}
 
 def build_records(database):
@@ -29,17 +31,18 @@ def build_records(database):
 
     return ret
 
-async def perform_poll(client, database, webdb):
+async def perform_poll(client: discord.Client, database: db.Database, webdb: webdb.Database):
     global records
 
     newrecs = build_records(database)
+    oldrecs = records[database]
 
     for map, data in newrecs.items():
         maptype = data['type']
 
         isWR = False
-        if map in records:
-            if data['time'] < records[map]['time']:
+        if map in oldrecs:
+            if data['time'] < oldrecs[map]['time']:
                 isWR = True
         else:
             isWR = True
@@ -48,8 +51,10 @@ async def perform_poll(client, database, webdb):
             mapinfo = webdb.get_map_by_lump(map)
 
             url = config.SITE_URL + urllib.parse.quote("/maps/%s" % (map,))
-            embed = discord.Embed(title="A new record for %s (%s) has been set!" % (map, mapinfo['name']), colour=discord.Colour.green(), url=url)
+            dbnamestr = "" if database.is_primary else f" on {database.display_name}"
+            embed = discord.Embed(title="A new record for %s (%s) has been set%s!" % (map, mapinfo['name'], dbnamestr), colour=database.wr_colour, url=url)
             embed.set_thumbnail(url=config.IMAGES_URL + urllib.parse.quote("%s.png" % (map,)))
+            embed.set_footer(text=f"Database: {database.display_name}")
 
             if maptype == "solo" or maptype == "jmrun":
                 rec = database.get_solo_map_record(map) if maptype == "solo" else database.get_jmrun_map_record(map)
@@ -78,8 +83,8 @@ async def perform_poll(client, database, webdb):
 
                     embed.add_field(name=jmutil.strip_colours(player), value=str(points) + " point" + plural, inline=True)
 
-                if map in records:
-                    oldrec = records[map]
+                if map in oldrecs:
+                    oldrec = oldrecs[map]
 
                     embed.add_field(name="Previous Record Time", value=jmutil.ticstime(oldrec['time']), inline=False)
                     embed.add_field(name="Previous Record Date", value=jmutil.format_date(oldrec['date']), inline=False)
@@ -98,15 +103,17 @@ async def perform_poll(client, database, webdb):
             channel = client.get_channel(config.NOTIFY_CHANNEL)
             await channel.send(embed=embed)
 
-    records = newrecs 
+    records[database] = newrecs
 
-async def poll_thread_target(client, database, webdb):
+async def poll_thread_target(client: discord.Client, databases: list[db.Database], webdb: webdb.Database):
     global records
 
     await client.wait_until_ready()
-    records = build_records(database)
+    for database in databases:
+        records[database] = build_records(database)
 
     while not client.is_closed():
         channel = client.get_channel(config.NOTIFY_CHANNEL)
-        await perform_poll(client, database, webdb)
+        for database in databases:
+            await perform_poll(client, database, webdb)
         await asyncio.sleep(config.WR_POLL_FREQ)

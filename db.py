@@ -7,10 +7,11 @@ TABLENAME = "Zandronum"
 # Read-only implementation of Zandronum's database functions, plus some extra
 # stuff for Jumpmaze
 class Database:
-    def __init__(self, filename):
-        self.conn = sqlite3.connect(filename, check_same_thread=False)
+    def __init__(self, config: dict):
+        self.conn = sqlite3.connect(config["path"], check_same_thread=False)
         self.lockobj = threading.Lock()
-        print('Opened Jumpmaze database ', filename)
+        self.config = config
+        print('Opened Jumpmaze database ', config["path"])
 
     def get_cursor(self):
         return self.conn.cursor()
@@ -262,3 +263,19 @@ class Database:
             rows[i] = rows[i][0][:-4]
 
         return rows
+
+    @property
+    def path(self):
+        return self.config["path"]
+
+    @property
+    def is_primary(self):
+        return "primary" in self.config and self.config["primary"]
+
+    @property
+    def display_name(self):
+        return self.config["name"]
+
+    @property
+    def wr_colour(self):
+        return self.config["wr_colour"] if "wr_colour" in self.config else 0x2ECC71

@@ -25,7 +25,8 @@ firstRun = True
 intents = discord.Intents.default()
 intents.message_content = True
 client = commands.Bot(command_prefix=config.COMMAND_PREFIX, intents=intents)
-database = db.Database(config.JM_DB_PATH)
+databases = [db.Database(x) for x in config.JM_DATABASES]
+database = next(x for x in databases if x.is_primary)
 webdb = webdb.Database(config.WEB_DB_PATH)
 
 time_in_ms = lambda: time.time() * 1000
@@ -277,7 +278,7 @@ async def on_ready():
     for guild in client.guilds:
         client.tree.copy_global_to(guild=guild)
         await client.tree.sync(guild=guild)
-    client.loop.create_task(wrcheck.poll_thread_target(client, database, webdb))
+    client.loop.create_task(wrcheck.poll_thread_target(client, databases, webdb))
     client.loop.create_task(botstatus.change_target(client))
     game = discord.Game("Jumpmaze")
     await client.change_presence(status=discord.Status.online, activity=game)
