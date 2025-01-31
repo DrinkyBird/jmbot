@@ -282,4 +282,4 @@ class Database:
 
     @property
     def announce_wrs(self):
-        return self.config["announce_wrs"] not in self.config or self.config["announce_wrs"]
+        return "announce_wrs" not in self.config or self.config["announce_wrs"]
