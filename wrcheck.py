@@ -108,12 +108,14 @@ async def perform_poll(client: discord.Client, database: db.Database, webdb: web
 async def poll_thread_target(client: discord.Client, databases: list[db.Database], webdb: webdb.Database):
     global records
 
+    dbs_to_poll = [x for x in databases if x.announce_wrs]
+
     await client.wait_until_ready()
-    for database in databases:
+    for database in dbs_to_poll:
         records[database] = build_records(database)
 
     while not client.is_closed():
         channel = client.get_channel(config.NOTIFY_CHANNEL)
-        for database in databases:
+        for database in dbs_to_poll:
             await perform_poll(client, database, webdb)
         await asyncio.sleep(config.WR_POLL_FREQ)

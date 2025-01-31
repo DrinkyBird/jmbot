@@ -279,3 +279,7 @@ class Database:
     @property
     def wr_colour(self):
         return self.config["wr_colour"] if "wr_colour" in self.config else 0x2ECC71
+
+    @property
+    def announce_wrs(self):
+        return self.config["announce_wrs"] not in self.config or self.config["announce_wrs"]
