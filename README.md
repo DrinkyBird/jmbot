@@ -6,8 +6,23 @@
 ```python
 # Your Discord bot token
 BOT_TOKEN=""
+
 # Your Jumpmaze sqlite database path
-JM_DB_PATH='C:/Users/Sean/Documents/jumpmaze.db'
+JM_DATABASES = [
+    {
+        "path": "/mnt/games/Doom/Zandronum/jm",
+        "primary": True,
+        "name": "Primary",
+    },
+    {
+        "path": "/home/sean/Dev/jmbot/jumpmaze.db",
+        "primary": False,
+        "name": "test",
+        "wr_colour": 0xFF00FF,
+    }
+]
+
+WEB_DB_PATH='/home/sean/Dev/jmbot/website.db'
 
 # List of IDs of bot admins
 ADMINS=[
