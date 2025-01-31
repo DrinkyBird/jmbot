@@ -199,12 +199,14 @@ class Jumpmaze(commands.Cog):
 
             embed.add_field(name="%d. %s" % (i + 1, player), value="Score: %0.3f" % (score,), inline=True)
 
-        await interaction.response.send_message('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
+        print('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta))
+        await interaction.followup.send('Calculated from %s times set by %s players in %f ms.' % (f'{timescounted:,}', f'{playerscounted:,}', delta), embed=embed)
         
     @app_commands.command(name="top", description="Returns the top 10 players for a given WAD or overall (using Sean's points formula)")
     @app_commands.describe(wad="ID of the WAD, defaults to all")
     @app_commands.autocomplete(wad=wad_autocomplete)
     async def top(self, interaction: discord.Interaction, wad: str):
+        await interaction.response.defer()
         await self.do_top(interaction, wad, ALGO_SEAN)
         
     @app_commands.command(name="top2", description="Returns the top 10 players for a given WAD or overall (using Snail's points formula)")
