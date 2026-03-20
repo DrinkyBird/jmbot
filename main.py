@@ -212,6 +212,7 @@ class Jumpmaze(commands.Cog):
     @app_commands.describe(wad="ID of the WAD, defaults to all")
     @app_commands.autocomplete(wad=wad_autocomplete)
     async def top2(self, interaction: discord.Interaction, wad: str):
+        await interaction.response.defer()
         await self.do_top(interaction, wad, ALGO_SNAIL)
 
     @app_commands.command(name="playertime", description="Returns the specified player's time on a specified map")
